@@ -132,3 +132,15 @@ obj-$(CONFIG_CEPH_FS)		+= ceph/
 obj-$(CONFIG_PSTORE)		+= pstore/
 obj-$(CONFIG_EFIVAR_FS)		+= efivarfs/
 obj-$(CONFIG_EROFS_FS)		+= erofs/
+
+# External SUSFS patches target newer APIs than this 4.9 tree. Keep adapters
+# local to susfs.o, and defer to upstream helpers when they are provided.
+ifneq ($(wildcard $(srctree)/fs/susfs.c),)
+ifeq ($(shell grep -c 'susfs_kernel_read' $(srctree)/fs/susfs.c),0)
+CFLAGS_susfs.o += -DSUSFS_NEEDS_LEGACY_READ
+endif
+ifeq ($(shell grep -c 'static.*susfs_kvmalloc' $(srctree)/fs/susfs.c),0)
+CFLAGS_susfs.o += -DSUSFS_NEEDS_KVMALLOC
+endif
+CFLAGS_susfs.o += -include $(srctree)/fs/susfs_compat.h
+endif
