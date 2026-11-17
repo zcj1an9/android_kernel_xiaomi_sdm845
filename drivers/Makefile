@@ -183,3 +183,11 @@ obj-$(CONFIG_SENSORS_SSC)		+= sensors/
 obj-$(CONFIG_TEE)		+= tee/
 obj-$(CONFIG_BCM_GPS_SPI_DRIVER) += gps/
 obj-$(CONFIG_HALLS)		+= halls/
+
+# Some 4.9 trees generate the backported setprocattr hook via LSM_HOOK.
+# KernelSU's literal lsm_hooks.h probe misses that three-argument ABI.
+ifeq ($(CONFIG_KSU),y)
+ifneq ($(shell grep -E '^[[:space:]]*LSM_HOOK.*setprocattr,[[:space:]]*const char [*]name' $(srctree)/include/linux/lsm_hook_defs.h 2>/dev/null),)
+subdir-ccflags-y += -DKSU_COMPAT_SETPROCATTR_USE_NEW_PROTOTYPE
+endif
+endif
