@@ -37,3 +37,10 @@ obj-$(CONFIG_BPF_LSM)			+= bpf/
 # Object integrity file lists
 subdir-$(CONFIG_INTEGRITY)		+= integrity
 obj-$(CONFIG_INTEGRITY)			+= integrity/
+
+# BBG is injected by the external workflow. Its 4.9 version check does not
+# account for this tree's backported three-argument security_add_hooks API.
+# Export the per-object flags to the BBG sub-make, without changing other LSMs.
+ifeq ($(CONFIG_BBG),y)
+export CFLAGS_baseband_guard.o += -include $(srctree)/security/bbg_lsm_compat.h
+endif
